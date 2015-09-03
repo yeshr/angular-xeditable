@@ -1,82 +1,20 @@
 /*
 Returns editableForm controller
 */
-angular.module('xeditable').factory('editableFormController', 
-  ['$parse', '$document', '$rootScope', 'editablePromiseCollection', 'editableUtils',
-  function($parse, $document, $rootScope, editablePromiseCollection, editableUtils) {
+angular.module('xeditable').factory('editableFormController',
+  ['$parse', '$document', '$rootScope', 'editablePromiseCollection', 'editableUtils', 'editableFormCollection',
+  function($parse, $document, $rootScope, editablePromiseCollection, editableUtils, editableFormCollection) {
 
-  // array of opened editable forms
-  var shown = [];
-
-  //Check if the child element correspond or is a descendant of the parent element
-  var isSelfOrDescendant = function (parent, child) {
-    if (child == parent) {
-      return true;
-    }
-
-    var node = child.parentNode;
-    while (node !== null) {
-      if (node == parent) {
-        return true;
+    // bind click to body: cancel|submit|ignore forms
+    $document.bind('click', function (e) {
+      // ignore right/middle button click
+      if ((e.which && e.which !== 1) || e.isDefaultPrevented()) {
+        return;
       }
-      node = node.parentNode;
-    }
-    return false;
-  };
-  
-  //Check if it is a real blur : if the click event appear on a shown editable elem, this is not a blur.
-  var isBlur = function(shown, event) {
-    var isBlur = true;
 
-    var editables = shown.$editables;
-    angular.forEach(editables, function(v){
-      var element = v.editorEl[0];
-      if (isSelfOrDescendant(element, event.target))
-        isBlur = false;
-      
+      editableUtils.closeOpenForms(editableFormCollection.shown, e);
     });
-    return isBlur;
-  };
-  
-  // bind click to body: cancel|submit|ignore forms
-  $document.bind('click', function(e) {
-    // ignore right/middle button click
-    if ((e.which && e.which !== 1) || e.isDefaultPrevented()) {
-      return;
-    }
 
-    var toCancel = [];
-    var toSubmit = [];
-    for (var i=0; i<shown.length; i++) {
-
-      // exclude clicked
-      if (shown[i]._clicked) {
-        shown[i]._clicked = false;
-        continue;
-      }
-
-      // exclude waiting
-      if (shown[i].$waiting) {
-        continue;
-      }
-
-      if (shown[i]._blur === 'cancel' && isBlur(shown[i], e)) {
-        toCancel.push(shown[i]);
-      }
-
-      if (shown[i]._blur === 'submit' && isBlur(shown[i], e)) {
-        toSubmit.push(shown[i]);
-      }
-    }
-
-    if (toCancel.length || toSubmit.length) {
-      $rootScope.$apply(function() {
-        angular.forEach(toCancel, function(v){ v.$cancel(); });
-        angular.forEach(toSubmit, function(v){ v.$submit(); });
-      });
-    }
-  });
- 
 
   var base = {
     $addEditable: function(editable) {
@@ -86,7 +24,7 @@ angular.module('xeditable').factory('editableFormController',
       //'on' is not supported in angular 1.0.8
       editable.elem.bind('$destroy', angular.bind(this, this.$removeEditable, editable));
 
-      //bind editable's local $form to self (if not bound yet, below form) 
+      //bind editable's local $form to self (if not bound yet, below form)
       if (!editable.scope.$form) {
         editable.scope.$form = this;
       }
@@ -110,7 +48,7 @@ angular.module('xeditable').factory('editableFormController',
 
     /**
      * Shows form with editable controls.
-     * 
+     *
      * @method $show()
      * @memberOf editable-form
      */
@@ -136,9 +74,9 @@ angular.module('xeditable').factory('editableFormController',
 
       //wait promises and activate
       pc.then({
-        onWait: angular.bind(this, this.$setWaiting), 
-        onTrue: angular.bind(this, this.$activate), 
-        onFalse: angular.bind(this, this.$activate), 
+        onWait: angular.bind(this, this.$setWaiting),
+        onTrue: angular.bind(this, this.$activate),
+        onFalse: angular.bind(this, this.$activate),
         onString: angular.bind(this, this.$activate)
       });
 
@@ -150,12 +88,12 @@ angular.module('xeditable').factory('editableFormController',
         if(editableUtils.indexOf(shown, this) === -1) {
           shown.push(this);
         }
-      }), 0);      
+      }), 0);
     },
 
     /**
      * Sets focus on form field specified by `name`.
-     * 
+     *
      * @method $activate(name)
      * @param {string} name name of field
      * @memberOf editable-form
@@ -188,14 +126,14 @@ angular.module('xeditable').factory('editableFormController',
 
     /**
      * Hides form with editable controls without saving.
-     * 
+     *
      * @method $hide()
      * @memberOf editable-form
      */
     $hide: function() {
       if (!this.$visible) {
         return;
-      }      
+      }
       this.$visible = false;
       // self hide
       this.$onhide();
@@ -210,23 +148,23 @@ angular.module('xeditable').factory('editableFormController',
 
     /**
      * Triggers `oncancel` event and calls `$hide()`.
-     * 
+     *
      * @method $cancel()
      * @memberOf editable-form
      */
     $cancel: function() {
       if (!this.$visible) {
         return;
-      }      
+      }
       // self cancel
       this.$oncancel();
-      // children's cancel      
+      // children's cancel
       angular.forEach(this.$editables, function(editable) {
         editable.cancel();
       });
       // self hide
       this.$hide();
-    },    
+    },
 
     $setWaiting: function(value) {
       this.$waiting = !!value;
@@ -239,7 +177,7 @@ angular.module('xeditable').factory('editableFormController',
 
     /**
      * Shows error message for particular field.
-     * 
+     *
      * @method $setError(name, msg)
      * @param {string} name name of field
      * @param {string} msg error message
@@ -256,7 +194,7 @@ angular.module('xeditable').factory('editableFormController',
     $submit: function() {
       if (this.$waiting) {
         return;
-      } 
+      }
 
       //clear errors
       this.$setError(null, '');
@@ -274,9 +212,9 @@ angular.module('xeditable').factory('editableFormController',
       - string: keep form open and show error
       */
       pc.then({
-        onWait: angular.bind(this, this.$setWaiting), 
-        onTrue: angular.bind(this, checkSelf, true), 
-        onFalse: angular.bind(this, checkSelf, false), 
+        onWait: angular.bind(this, this.$setWaiting),
+        onTrue: angular.bind(this, checkSelf, true),
+        onFalse: angular.bind(this, checkSelf, false),
         onString: angular.bind(this, this.$activate)
       });
 
@@ -285,9 +223,9 @@ angular.module('xeditable').factory('editableFormController',
         var pc = editablePromiseCollection();
         pc.when(this.$onbeforesave());
         pc.then({
-          onWait: angular.bind(this, this.$setWaiting), 
-          onTrue: childrenTrue ? angular.bind(this, this.$save) : angular.bind(this, this.$hide), 
-          onFalse: angular.bind(this, this.$hide), 
+          onWait: angular.bind(this, this.$setWaiting),
+          onTrue: childrenTrue ? angular.bind(this, this.$save) : angular.bind(this, this.$hide),
+          onFalse: angular.bind(this, this.$hide),
           onString: angular.bind(this, this.$activate)
         });
       }
@@ -312,9 +250,9 @@ angular.module('xeditable').factory('editableFormController',
       - string: keep form open and show error
       */
       pc.then({
-        onWait: angular.bind(this, this.$setWaiting), 
-        onTrue: angular.bind(this, this.$hide), 
-        onFalse: angular.bind(this, this.$hide), 
+        onWait: angular.bind(this, this.$setWaiting),
+        onTrue: angular.bind(this, this.$hide),
+        onFalse: angular.bind(this, this.$hide),
         onString: angular.bind(this, this.$activate)
       });
     },
@@ -331,14 +269,14 @@ angular.module('xeditable').factory('editableFormController',
       $editables: [],
       /**
        * Form visibility flag.
-       * 
+       *
        * @var {bool} $visible
        * @memberOf editable-form
        */
       $visible: false,
       /**
        * Form waiting flag. It becomes `true` when form is loading or saving data.
-       * 
+       *
        * @var {bool} $waiting
        * @memberOf editable-form
        */
