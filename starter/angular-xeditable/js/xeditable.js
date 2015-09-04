@@ -1499,6 +1499,19 @@ angular.module('xeditable').factory('editablePromiseCollection', ['$q', function
 }]);
 
 /**
+ * editableFormCollection
+ *
+ * Collect references to all the array of opened editable forms.
+ */
+
+angular.module('xeditable').factory('editableFormCollection', [function () {
+  return {
+    shown: []
+  };
+}]);
+
+
+/**
  * editableUtils
  */
  angular.module('xeditable').factory('editableUtils', [function() {
