@@ -365,8 +365,8 @@ angular.module('xeditable').factory('editableController',
   function($q, editableUtils) {
 
   //EditableController function
-  EditableController.$inject = ['$scope', '$attrs', '$element', '$parse', 'editableThemes', 'editableIcons', 'editableOptions', '$rootScope', '$compile', '$q'];
-  function EditableController($scope, $attrs, $element, $parse, editableThemes, editableIcons, editableOptions, $rootScope, $compile, $q) {
+  EditableController.$inject = ['$scope', '$attrs', '$element', '$parse', 'editableThemes', 'editableIcons', 'editableOptions', '$rootScope', '$compile', '$q', 'editableFormCollection'];
+  function EditableController($scope, $attrs, $element, $parse, editableThemes, editableIcons, editableOptions, $rootScope, $compile, $q, editableFormCollection) {
     var valueGetter;
 
     //if control is disabled - it does not participate in waiting process
@@ -1055,8 +1055,8 @@ angular.module('xeditable').factory('editableFormController',
       setTimeout(angular.bind(this, function() {
         // clear `clicked` to get ready for clicks on visible form
         this._clicked = false;
-        if(editableUtils.indexOf(shown, this) === -1) {
-          shown.push(this);
+        if(editableUtils.indexOf(editableFormCollection.shown, this) === -1) {
+          editableFormCollection.shown.push(this);
         }
       }), 0);
     },
@@ -1113,7 +1113,7 @@ angular.module('xeditable').factory('editableFormController',
       });
 
       // remove from internal list of shown forms
-      editableUtils.arrayRemove(shown, this);
+      editableUtils.arrayRemove(editableFormCollection.shown, this);
     },
 
     /**
@@ -1514,7 +1514,7 @@ angular.module('xeditable').factory('editableFormCollection', [function () {
 /**
  * editableUtils
  */
- angular.module('xeditable').factory('editableUtils', [function() {
+ angular.module('xeditable').factory('editableUtils', ['$rootScope', function($rootScope) {
   return {
     indexOf: function (array, obj) {
       if (array.indexOf) return array.indexOf(obj);

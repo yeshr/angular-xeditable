@@ -85,8 +85,8 @@ angular.module('xeditable').factory('editableFormController',
       setTimeout(angular.bind(this, function() {
         // clear `clicked` to get ready for clicks on visible form
         this._clicked = false;
-        if(editableUtils.indexOf(shown, this) === -1) {
-          shown.push(this);
+        if(editableUtils.indexOf(editableFormCollection.shown, this) === -1) {
+          editableFormCollection.shown.push(this);
         }
       }), 0);
     },
@@ -143,7 +143,7 @@ angular.module('xeditable').factory('editableFormController',
       });
 
       // remove from internal list of shown forms
-      editableUtils.arrayRemove(shown, this);
+      editableUtils.arrayRemove(editableFormCollection.shown, this);
     },
 
     /**

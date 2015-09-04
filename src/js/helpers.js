@@ -92,7 +92,7 @@ angular.module('xeditable').factory('editableFormCollection', [function () {
 /**
  * editableUtils
  */
- angular.module('xeditable').factory('editableUtils', [function() {
+ angular.module('xeditable').factory('editableUtils', ['$rootScope', function($rootScope) {
   return {
     indexOf: function (array, obj) {
       if (array.indexOf) return array.indexOf(obj);
