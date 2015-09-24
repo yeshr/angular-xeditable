@@ -39,21 +39,21 @@ angular.module('xeditable').factory('editablePromiseCollection', ['$q', function
         if (this.promises.length) {
           onWait(true);
           $q.all(this.promises).then(
-            //all resolved
-            function(results) {
-              onWait(false);
-              //check all results via same `when` method (without checking promises)
-              angular.forEach(results, function(result) {
-                self.when(result, true);
-              });
-              applyCallback();
-            },
-            //some rejected
-            function(error) {
-              onWait(false);
-              onString();
-            }
-            );
+              //all resolved
+              function(results) {
+                onWait(false);
+                //check all results via same `when` method (without checking promises)
+                angular.forEach(results, function(result) {
+                  self.when(result, true);
+                });
+                applyCallback();
+              },
+              //some rejected
+              function(error) {
+                onWait(false);
+                onString();
+              }
+          );
         } else {
           applyCallback();
         }
@@ -77,22 +77,9 @@ angular.module('xeditable').factory('editablePromiseCollection', ['$q', function
 }]);
 
 /**
- * editableFormCollection
- *
- * Collect references to all the array of opened editable forms.
- */
-
-angular.module('xeditable').factory('editableFormCollection', [function () {
-  return {
-    shown: []
-  };
-}]);
-
-
-/**
  * editableUtils
  */
- angular.module('xeditable').factory('editableUtils', ['$rootScope', function($rootScope) {
+angular.module('xeditable').factory('editableUtils', [function() {
   return {
     indexOf: function (array, obj) {
       if (array.indexOf) return array.indexOf(obj);
@@ -123,79 +110,10 @@ angular.module('xeditable').factory('editableFormCollection', [function () {
       var SPECIAL_CHARS_REGEXP = /([\:\-\_]+(.))/g;
       var MOZ_HACK_REGEXP = /^moz([A-Z])/;
       return str.
-      replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
-        return offset ? letter.toUpperCase() : letter;
-      }).
-      replace(MOZ_HACK_REGEXP, 'Moz$1');
-    },
-
-    isSelfOrDescendant: function (parent, child) {
-      if (child == parent) {
-        return true;
-      }
-
-      var node = child.parentNode;
-      while (node !== null) {
-        if (node == parent) {
-          return true;
-        }
-        node = node.parentNode;
-      }
-      return false;
-    },
-
-    //Check if it is a real blur : if the click event appear on a shown editable elem, this is not a blur.
-    isBlur: function (shown, event) {
-      var isBlur = true;
-      var self = this;
-
-      var editables = shown.$editables;
-      angular.forEach(editables, function (v) {
-        var element = v.editorEl[0];
-        if (self.isSelfOrDescendant(element, event.target))
-          isBlur = false;
-
-      });
-      return isBlur;
-    },
-
-    // Close any other open forms and current form
-    closeOpenForms: function (shown, e) {
-      var self = this;
-      var toCancel = [];
-      var toSubmit = [];
-      for (var i = 0; i < shown.length; i++) {
-
-        // exclude clicked
-        if (shown[i]._clicked) {
-          shown[i]._clicked = false;
-          continue;
-        }
-
-        // exclude waiting
-        if (shown[i].$waiting) {
-          continue;
-        }
-
-        if (shown[i]._blur === 'cancel' && self.isBlur(shown[i], e)) {
-          toCancel.push(shown[i]);
-        }
-
-        if (shown[i]._blur === 'submit' && self.isBlur(shown[i], e)) {
-          toSubmit.push(shown[i]);
-        }
-      }
-
-      if (toCancel.length || toSubmit.length) {
-        $rootScope.$apply(function () {
-          angular.forEach(toCancel, function (v) {
-            v.$cancel();
-          });
-          angular.forEach(toSubmit, function (v) {
-            v.$submit();
-          });
-        });
-      }
+          replace(SPECIAL_CHARS_REGEXP, function(_, separator, letter, offset) {
+            return offset ? letter.toUpperCase() : letter;
+          }).
+          replace(MOZ_HACK_REGEXP, 'Moz$1');
     }
   };
 }]);
@@ -205,7 +123,7 @@ angular.module('xeditable').factory('editableFormCollection', [function () {
  *
  * see: https://github.com/angular/angular.js/blob/master/src/ng/directive/select.js#L131
  */
- angular.module('xeditable').factory('editableNgOptionsParser', [function() {
+angular.module('xeditable').factory('editableNgOptionsParser', [function() {
   //0000111110000000000022220000000000000000000000333300000000000000444444444444444000000000555555555555555000000066666666666666600000000000000007777000000000000000000088888
   var NG_OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?(?:\s+group\s+by\s+(.*))?\s+for\s+(?:([\$\w][\$\w]*)|(?:\(\s*([\$\w][\$\w]*)\s*,\s*([\$\w][\$\w]*)\s*\)))\s+in\s+(.*?)(?:\s+track\s+by\s+(.*?))?$/;
 
@@ -217,14 +135,14 @@ angular.module('xeditable').factory('editableFormCollection', [function () {
     }
 
     var
-    displayFn = match[2] || match[1],
-    valueName = match[4] || match[6],
-    keyName = match[5],
-    groupByFn = match[3] || '',
-    valueFn = match[2] ? match[1] : valueName,
-    valuesFn = match[7],
-    track = match[8],
-    trackFn = track ? match[8] : null;
+        displayFn = match[2] || match[1],
+        valueName = match[4] || match[6],
+        keyName = match[5],
+        groupByFn = match[3] || '',
+        valueFn = match[2] ? match[1] : valueName,
+        valuesFn = match[7],
+        track = match[8],
+        trackFn = track ? match[8] : null;
 
     var ngRepeat;
     if (keyName === undefined) { // array
@@ -327,7 +245,7 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     /*
      Replace tokens in template with <select> elements
      */
-     getTemplate: function() {
+    getTemplate: function() {
       var tpl = this.options.template;
       var customClass = this.options.customClass;
 
@@ -357,7 +275,7 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     /*
      Initialize combos that presents in template
      */
-     initCombos: function() {
+    initCombos: function() {
       for (var k in this.map) {
         var c = this.$widget[0].querySelectorAll('.'+k);
         // set properties like this.$day, this.$month etc.
@@ -370,7 +288,7 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     /*
      Fill combo with items
      */
-     fillCombo: function(k) {
+    fillCombo: function(k) {
       var $combo = this['$'+k];
       if (!$combo) {
         return;
@@ -392,7 +310,7 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     /*
      Initialize items of combos. Handles `firstItem` option
      */
-     fillCommon: function(key) {
+    fillCommon: function(key) {
       var values = [], relTime;
 
       if(this.options.firstItem === 'name') {
@@ -410,12 +328,12 @@ angular.module('xeditable').factory('editableCombodate', [function() {
 
 
     /*
-    fill day
-    */
+     fill day
+     */
     fillDay: function() {
       var items = this.fillCommon('d'), name, i,
-      twoDigit = this.options.template.indexOf('DD') !== -1,
-      daysCount = 31;
+          twoDigit = this.options.template.indexOf('DD') !== -1,
+          daysCount = 31;
 
       // detect days count (depends on month and year)
       // originally https://github.com/vitalets/combodate/pull/7
@@ -436,13 +354,13 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill month
-    */
+     fill month
+     */
     fillMonth: function() {
       var items = this.fillCommon('M'), name, i,
-      longNames = this.options.template.indexOf('MMMM') !== -1,
-      shortNames = this.options.template.indexOf('MMM') !== -1,
-      twoDigit = this.options.template.indexOf('MM') !== -1;
+          longNames = this.options.template.indexOf('MMMM') !== -1,
+          shortNames = this.options.template.indexOf('MMM') !== -1,
+          twoDigit = this.options.template.indexOf('MM') !== -1;
 
       for(i=0; i<=11; i++) {
         if(longNames) {
@@ -461,11 +379,11 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill year
-    */
+     fill year
+     */
     fillYear: function() {
       var items = [], name, i,
-      longNames = this.options.template.indexOf('YYYY') !== -1;
+          longNames = this.options.template.indexOf('YYYY') !== -1;
 
       for(i=this.options.maxYear; i>=this.options.minYear; i--) {
         name = longNames ? i : (i+'').substring(2);
@@ -478,15 +396,15 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill hour
-    */
+     fill hour
+     */
     fillHour: function() {
       var items = this.fillCommon('h'), name, i,
-      h12 = this.options.template.indexOf('h') !== -1,
-      h24 = this.options.template.indexOf('H') !== -1,
-      twoDigit = this.options.template.toLowerCase().indexOf('hh') !== -1,
-      min = h12 ? 1 : 0,
-      max = h12 ? 12 : 23;
+          h12 = this.options.template.indexOf('h') !== -1,
+          h24 = this.options.template.indexOf('H') !== -1,
+          twoDigit = this.options.template.toLowerCase().indexOf('hh') !== -1,
+          min = h12 ? 1 : 0,
+          max = h12 ? 12 : 23;
 
       for(i=min; i<=max; i++) {
         name = twoDigit ? this.leadZero(i) : i;
@@ -496,11 +414,11 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill minute
-    */
+     fill minute
+     */
     fillMinute: function() {
       var items = this.fillCommon('m'), name, i,
-      twoDigit = this.options.template.indexOf('mm') !== -1;
+          twoDigit = this.options.template.indexOf('mm') !== -1;
 
       for(i=0; i<=59; i+= this.options.minuteStep) {
         name = twoDigit ? this.leadZero(i) : i;
@@ -510,11 +428,11 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill second
-    */
+     fill second
+     */
     fillSecond: function() {
       var items = this.fillCommon('s'), name, i,
-      twoDigit = this.options.template.indexOf('ss') !== -1;
+          twoDigit = this.options.template.indexOf('ss') !== -1;
 
       for(i=0; i<=59; i+= this.options.secondStep) {
         name = twoDigit ? this.leadZero(i) : i;
@@ -524,15 +442,15 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     },
 
     /*
-    fill ampm
-    */
+     fill ampm
+     */
     fillAmpm: function() {
       var ampmL = this.options.template.indexOf('a') !== -1,
-      ampmU = this.options.template.indexOf('A') !== -1,
-      items = [
-      ['am', ampmL ? 'am' : 'AM'],
-      ['pm', ampmL ? 'pm' : 'PM']
-      ];
+          ampmU = this.options.template.indexOf('A') !== -1,
+          items = [
+            ['am', ampmL ? 'am' : 'AM'],
+            ['pm', ampmL ? 'pm' : 'PM']
+          ];
       return items;
     },
 
@@ -541,10 +459,10 @@ angular.module('xeditable').factory('editableCombodate', [function() {
      If format not specified - `options.format` used.
      If format = `null` - Moment object returned.
      */
-     getValue: function(format) {
+    getValue: function(format) {
       var dt, values = {},
-      that = this,
-      notSelected = false;
+          that = this,
+          notSelected = false;
 
       //getting selected values
       angular.forEach(this.map, function(v, k) {
@@ -556,15 +474,15 @@ angular.module('xeditable').factory('editableCombodate', [function() {
         values[k] = that['$'+k] ? parseInt(that['$'+k].val(), 10) : def;
 
         if(isNaN(values[k])) {
-         notSelected = true;
-         return false;
-       }
-     });
+          notSelected = true;
+          return false;
+        }
+      });
 
       //if at least one visible combo not selected - return empty string
       if(notSelected) {
-       return '';
-     }
+        return '';
+      }
 
       //convert hours 12h --> 24h
       if(this.$ampm) {
@@ -583,21 +501,21 @@ angular.module('xeditable').factory('editableCombodate', [function() {
 
       format = format === undefined ? this.options.format : format;
       if(format === null) {
-       return dt.isValid() ? dt : null;
-     } else {
-       return dt.isValid() ? dt.format(format) : '';
-     }
-   },
+        return dt.isValid() ? dt : null;
+      } else {
+        return dt.isValid() ? dt.format(format) : '';
+      }
+    },
 
-   setValue: function(value) {
-    if(!value) {
-      return;
-    }
+    setValue: function(value) {
+      if(!value) {
+        return;
+      }
 
       // parse in strict mode (third param `true`)
       var dt = typeof value === 'string' ? moment(value, this.options.format, true) : moment(value),
-      that = this,
-      values = {};
+          that = this,
+          values = {};
 
       //function to find nearest value in select options
       function getNearest($select, value) {
@@ -643,16 +561,16 @@ angular.module('xeditable').factory('editableCombodate', [function() {
           if(that['$'+k]) {
 
             if(k === 'minute' && that.options.minuteStep > 1 && that.options.roundTime) {
-             v = getNearest(that['$'+k], v);
-           }
+              v = getNearest(that['$'+k], v);
+            }
 
-           if(k === 'second' && that.options.secondStep > 1 && that.options.roundTime) {
-             v = getNearest(that['$'+k], v);
-           }
+            if(k === 'second' && that.options.secondStep > 1 && that.options.roundTime) {
+              v = getNearest(that['$'+k], v);
+            }
 
-           that['$'+k].val(v);
-         }
-       });
+            that['$'+k].val(v);
+          }
+        });
 
         // update days count
         if (this.options.smartDays) {
@@ -666,7 +584,7 @@ angular.module('xeditable').factory('editableCombodate', [function() {
     /*
      highlight combos if date is invalid
      */
-     highlight: function(dt) {
+    highlight: function(dt) {
       if(!dt.isValid()) {
         if(this.options.errorClass) {
           this.$widget.addClass(this.options.errorClass);
