@@ -218,7 +218,9 @@ angular.module('xeditable').factory('editableFormController',
               editable.hide();
             });
 
-            this._deferred.resolve();
+            if (angular.isObject(this.$promise)) {
+              this._deferred.resolve();
+            }
             // remove from internal list of shown forms
             editableUtils.arrayRemove(shown, this);
           },

@@ -693,21 +693,23 @@ angular.module('xeditable').factory('editableController',
 
             // bind blur for when really losing focus
             // on single inputs
-            self.inputEl.bind('blur', function(e) {
-              if(!self.single) {
-                return;
-              }
-              if (e.keyCode === 9) {
-                e.preventDefault();
-              }
-              self.scope.$apply(function() {
-                if (self.attrs.blur === 'submit') {
-                  self.scope.$form.$submit();
-                } else {
-                  self.scope.$form.$cancel();
+            if (self.directiveName === 'editableText' && !$attrs.$attr.eTypeahead) {
+              self.inputEl.bind('blur', function (e) {
+                if (!self.single) {
+                  return;
                 }
+                if (e.keyCode === 9) {
+                  e.preventDefault();
+                }
+                self.scope.$apply(function () {
+                  if (self.attrs.blur === 'submit') {
+                    self.scope.$form.$submit();
+                  } else {
+                    self.scope.$form.$cancel();
+                  }
+                });
               });
-            });
+            }
 
             // autosubmit when `no buttons`
             if (self.single && self.buttons === 'no') {
@@ -1199,7 +1201,9 @@ angular.module('xeditable').factory('editableFormController',
               editable.hide();
             });
 
-            this._deferred.resolve();
+            if (angular.isObject(this.$promise)) {
+              this._deferred.resolve();
+            }
             // remove from internal list of shown forms
             editableUtils.arrayRemove(shown, this);
           },
