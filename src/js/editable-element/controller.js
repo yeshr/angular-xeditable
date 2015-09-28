@@ -340,7 +340,7 @@ angular.module('xeditable').factory('editableController',
 
             // bind blur for when really losing focus
             // on single inputs
-            if (self.directiveName === 'editableText' && !$attrs.$attr.eTypeahead) {
+            if (!$attrs.$attr.eTypeahead) {
               self.inputEl.bind('blur', function (e) {
                 if (!self.single) {
                   return;

@@ -1,7 +1,7 @@
 /*!
 angular-xeditable - 0.1.9
 Edit-in-place for angular.js
-Build date: 2015-09-25 
+Build date: 2015-09-28 
 */
 /**
  * Angular-xeditable module 
@@ -693,7 +693,7 @@ angular.module('xeditable').factory('editableController',
 
             // bind blur for when really losing focus
             // on single inputs
-            if (self.directiveName === 'editableText' && !$attrs.$attr.eTypeahead) {
+            if (!$attrs.$attr.eTypeahead) {
               self.inputEl.bind('blur', function (e) {
                 if (!self.single) {
                   return;
